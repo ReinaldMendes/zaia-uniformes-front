@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ZAIA Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1E3A5F;
+            --secondary: #2F5F8F;
+            --accent: #D4AF37;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F3F4F6;
+        }
+
+        h1, h2, .display-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .sidebar {
+            background: var(--primary);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            overflow-y: auto;
+            padding: 30px 0;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            padding: 0 30px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .sidebar-logo h2 {
+            color: var(--accent);
+            font-size: 28px;
+            margin: 0;
+        }
+
+        .sidebar-logo p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 30px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--accent);
+        }
+
+        .sidebar-menu a.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--accent);
+            color: white;
+        }
+
+        .sidebar-menu a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .top-bar h1 {
+            font-size: 28px;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            background: #DC2626;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            margin-right: 10px;
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .nav-btn:hover {
+            border-color: var(--primary);
+        }
+
+        .btn-create {
+            padding: 12px 24px;
+            background: #10B981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-create:hover {
+            background: #059669;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-error {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FECACA;
+        }
+
+        .alert-success {
+            background: #DCFCE7;
+            color: #166534;
+            border: 1px solid #BBF7D0;
+        }
+
+        .alert-info {
+            background: #DBEAFE;
+            color: #0284C7;
+            border: 1px solid #BAE6FD;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #E5E7EB;
+            padding-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #E5E7EB;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: var(--secondary);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .content-item,
+        .partner-item,
+        .user-item {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .content-list,
+        .partners-list,
+        .users-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .page-loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .content-list,
+            .partners-list,
+            .users-list {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <h2>ZAIA</h2>
+            <p>Painel de Administração</p>
+        </div>
+        <div class="sidebar-menu">
+            <a href="#" onclick="switchTab('content'); return false;" class="active">
+                <i class="fas fa-file-alt"></i> Conteúdos
+            </a>
+            <a href="#" onclick="switchTab('partners'); return false;">
+                <i class="fas fa-handshake"></i> Parceiros
+            </a>
+            <a href="#" onclick="switchTab('users'); return false;">
+                <i class="fas fa-users"></i> Usuários
+            </a>
+        </div>
+        <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 30px 0; padding: 30px 30px 0;">
+            <button onclick="handleLogout()" class="logout-btn" style="width: 100%; margin: 0;">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <h1>Dashboard</h1>
+            <div id="userInfo" style="color: #666; font-weight: 500;"></div>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="alertContainer" class="alert-container"></div>
+
+        <!-- ABA: CONTEÚDOS -->
+        <div id="content-tab" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: var(--primary); margin: 0; font-size: 24px;">Gerenciar Conteúdos</h2>
+                <button onclick="openNewContentForm()" class="btn-create">
+                    <i class="fas fa-plus"></i> Novo Conteúdo
+                </button>
+            </div>
+
+            <div id="contentList" class="content-list">
+                <!-- Preenchido dinamicamente -->
+            </div>
+        </div>
+
+        <!-- ABA: PARCEIROS -->
+        <div id="partners-tab" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: var(--primary); margin: 0; font-size: 24px;">Gerenciar Parceiros</h2>
+                <button onclick="openNewPartnerForm()" class="btn-create">
+                    <i class="fas fa-plus"></i> Novo Parceiro
+                </button>
+            </div>
+
+            <div id="partnersList" class="partners-list">
+                <!-- Preenchido dinamicamente -->
+            </div>
+        </div>
+
+        <!-- ABA: USUÁRIOS -->
+        <div id="users-tab" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: var(--primary); margin: 0; font-size: 24px;">Gerenciar Usuários</h2>
+                <button onclick="openNewUserForm()" class="btn-create">
+                    <i class="fas fa-plus"></i> Novo Usuário
+                </button>
+            </div>
+
+            <div id="usersList" class="users-list">
+                <!-- Preenchido dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Conteúdo -->
+    <div id="contentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Novo Conteúdo</h2>
+                <button onclick="closeContentModal()" class="modal-close">&times;</button>
+            </div>
+
+            <form id="contentForm">
+                <div class="form-group">
+                    <label for="contentKey">Chave (identificador único)</label>
+                    <input 
+                        type="text" 
+                        id="contentKey" 
+                        name="key" 
+                        placeholder="hero_title"
+                        required
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="contentValue">Valor</label>
+                    <textarea 
+                        id="contentValue" 
+                        name="value" 
+                        placeholder="Insira o conteúdo aqui..."
+                        required
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Parceiro -->
+    <div id="partnerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="partnerModalTitle">Novo Parceiro</h2>
+                <button onclick="closePartnerModal()" class="modal-close">&times;</button>
+            </div>
+
+            <form id="partnerForm">
+                <div class="form-group">
+                    <label for="partnerName">Nome do Parceiro</label>
+                    <input 
+                        type="text" 
+                        id="partnerName" 
+                        name="name" 
+                        placeholder="Nome da empresa"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="partnerLogo">Logo (Imagem)</label>
+                    <input 
+                        type="file" 
+                        id="partnerLogo" 
+                        name="logo" 
+                        accept="image/*"
+                        required
+                    >
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                        Carregue uma imagem (PNG, JPG, etc.)
+                    </p>
+                </div>
+
+                <button type="submit" class="btn-submit">Criar Parceiro</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Usuário -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Novo Usuário</h2>
+                <button onclick="closeUserModal()" class="modal-close">&times;</button>
+            </div>
+
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="userName">Nome Completo</label>
+                    <input 
+                        type="text" 
+                        id="userName" 
+                        name="name" 
+                        placeholder="João Silva"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="userEmail">Email</label>
+                    <input 
+                        type="email" 
+                        id="userEmail" 
+                        name="email" 
+                        placeholder="joao@example.com"
+                        required
+                    >
+                </div>
+
+                <div id="passwordGroup" class="form-group">
+                    <label for="userPassword">Senha</label>
+                    <input 
+                        type="password" 
+                        id="userPassword" 
+                        name="password" 
+                        placeholder="••••••••"
+                    >
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                        Deixe em branco para manter a senha atual (ao editar)
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label for="userRole">Função (Role)</label>
+                    <select id="userRole" name="role" required>
+                        <option value="user">Usuário</option>
+                        <option value="admin">Administrador</option>
+                        <option value="editor">Editor</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-submit">Salvar Usuário</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
