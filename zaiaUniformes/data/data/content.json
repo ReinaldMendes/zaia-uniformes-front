@@ -1,0 +1,18 @@
+{
+  "companyName": "ZAIA Uniformes Corporativos",
+  "contact": {
+    "phone": "(11) 4002-8922",
+    "email": "contato@zaiauniformes.com.br",
+    "address": "Rua das Indústrias, 1234 - São Paulo, SP"
+  },
+  "services": [
+    {
+      "title": "Corporativos",
+      "desc": "Camisaria e ternos sob medida."
+    },
+    {
+      "title": "Industriais",
+      "desc": "Resistência para o chão de fábrica."
+    }
+  ]
+}
