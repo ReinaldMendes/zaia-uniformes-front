@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Admin | Zion Uniforms</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#0f172a;color:#111;display:grid;place-items:center;min-height:100vh;margin:0}
+    .card{background:#fff;padding:28px;border-radius:12px;max-width:380px;width:92%;box-shadow:0 12px 30px rgba(0,0,0,.2)}
+    input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #d1d5db;font-size:14px}
+    button{background:#1e3a5f;color:#fff;border:none;font-weight:700;cursor:pointer}
+    .feedback{margin-top:12px;padding:10px;border-radius:8px;font-size:13px}
+    .feedback.info{background:#e0f2fe;color:#075985}
+    .feedback.success{background:#dcfce7;color:#166534}
+    .feedback.error{background:#fee2e2;color:#991b1b}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Painel Zion Uniforms</h1>
+    <p>Entre com seu usuário administrador.</p>
+    <form id="loginForm">
+      <label>Email</label>
+      <input type="email" name="email" required placeholder="admin@empresa.com">
+      <label>Senha</label>
+      <input type="password" name="password" required placeholder="••••••••">
+      <button type="submit">Entrar</button>
+    </form>
+    <div id="loginFeedback" class="feedback info">Aguardando login.</div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zion Uniforms</title>
+  <style>
+    body{font-family:Arial,sans-serif;margin:0;line-height:1.5;background:#f8fafc;color:#0f172a}
+    header,section,footer{padding:28px 20px;max-width:1100px;margin:0 auto}
+    .hero{background:#1e3a5f;color:#fff;padding:60px 20px;border-radius:0 0 20px 20px}
+    .partners{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
+    .partner-card{background:#fff;padding:12px;border-radius:10px;text-align:center;box-shadow:0 4px 14px rgba(2,6,23,.08)}
+    .partner-card img{max-width:110px;max-height:55px;object-fit:contain}
+    .btn-admin{display:inline-block;margin-top:10px;background:#fff;color:#1e3a5f;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:700}
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <small data-content-key="hero_location">Ponta Grossa • PR</small>
+    <h1 data-content-key="hero_title">Vista a Excelência</h1>
+    <p data-content-key="hero_subtitle">Uniformes corporativos sob medida para fortalecer sua marca.</p>
+    <a href="/login.html" class="btn-admin">Acessar CMS</a>
+  </section>
+
+  <section>
+    <h2 data-content-key="about_title">Sobre a Zion Uniforms</h2>
+    <p data-content-key="about_text">Somos especialistas em uniformes profissionais de alta performance.</p>
+    <img src="img/sobre.jpg" alt="Sobre Zion Uniforms" data-content-key="about_image" data-content-attr="src" style="max-width:100%;border-radius:12px;">
+  </section>
+
+  <section>
+    <h2 data-content-key="services_title">Nossas Linhas</h2>
+    <ul>
+      <li data-content-key="service_1">Linha Executive</li>
+      <li data-content-key="service_2">Linha Industrial</li>
+      <li data-content-key="service_3">Linha Técnica</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Parceiros</h2>
+    <div id="partnersContainer" class="partners"></div>
+  </section>
+
+  <footer>
+    <strong data-content-key="footer_company">Zion Uniforms</strong>
+    <p data-content-key="footer_contact">comercial@zaiauniformes.com.br • (42) 98866-5220</p>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/content-loader.js"></script>
+  <script>
+    async function loadPartnersPublic() {
+      const container = document.getElementById('partnersContainer');
+      container.innerHTML = '<p>Carregando parceiros...</p>';
+
+      try {
+        const payload = await fetch('https://zaia-uniformes-backend.onrender.com/api/partners');
+        const data = await payload.json();
+        const partners = Array.isArray(data) ? data : (data.data || data.items || []);
+
+        container.innerHTML = '';
+        partners.forEach((partner) => {
+          const card = document.createElement('article');
+          card.className = 'partner-card';
+          const logo = partner.logoUrl || partner.logo || '';
+          card.innerHTML = `
+            <img src="${logo}" alt="${partner.name || 'Parceiro'}">
+            <p>${partner.name || 'Parceiro'}</p>
+          `;
+          container.appendChild(card);
+        });
+      } catch (error) {
+        container.innerHTML = '<p>Não foi possível carregar parceiros no momento.</p>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPartnersPublic);
+  </script>
+</body>
+</html>
