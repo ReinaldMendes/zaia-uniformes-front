@@ -1,255 +1,318 @@
-/**
- * API.js - Integração com o backend Node.js/Express
- * Base URL: https://zaia-uniformes-backend.onrender.com
- */
+/*
+API.js - Integração com backend ZAIA
+*/
 
-const API_BASE_URL = 'https://zaia-uniformes-backend.onrender.com';
+const API_BASE_URL = "https://zaia-uniformes-backend.onrender.com";
+const BASE_PATH = "/zaiaUniformes";
 
-/**
- * Obtém o token JWT do localStorage
- */
+/*
+TOKEN
+*/
+
 function getToken() {
-  return localStorage.getItem('authToken');
+  return localStorage.getItem("authToken");
 }
 
 /**
- * Define o token JWT no localStorage
+ * Extrai papel/role do usuário do token JWT ou do localStorage.
+ * O backend inclui `role` no payload do JWT.
  */
-function setToken(token) {
-  localStorage.setItem('authToken', token);
-}
-
-/**
- * Remove o token JWT do localStorage
- */
-function removeToken() {
-  localStorage.removeItem('authToken');
-}
-
-/**
- * Função auxiliar para fazer requisições autenticadas
- */
-async function apiCall(endpoint, options = {}) {
-  const url = `${API_BASE_URL}${endpoint}`;
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
+function getUserRole() {
+  // primariamente tentamos a chave armazenada diretamente
+  const stored = localStorage.getItem("userRole");
+  if (stored) return stored;
 
   const token = getToken();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const config = {
-    ...options,
-    headers,
-  };
+  if (!token) return null;
 
   try {
-    const response = await fetch(url, config);
-
-    // Se receber 401, token expirou
-    if (response.status === 401) {
-      removeToken();
-      window.location.href = '/admin/login.html';
-      throw new Error('Sessão expirada. Faça login novamente.');
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    // verificar se o backend usa 'role' ou 'isAdmin'
+    if (payload.role) return payload.role;
+    if (payload.isAdmin !== undefined) {
+      return payload.isAdmin ? 'ADMIN' : 'USER';
     }
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || `Erro: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('API Error:', error);
-    throw error;
-  }
-}
-
-/**
- * AUTENTICAÇÃO
- */
-
-// Login
-async function login(email, password) {
-  return apiCall('/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-}
-
-// Verificar se está autenticado
-async function verifyAuth() {
-  try {
-    return await apiCall('/api/auth/me', { method: 'GET' });
+    return null;
   } catch {
     return null;
   }
 }
 
-/**
- * CONTEÚDO (Landing Page)
- */
-
-// Listar todos os conteúdos
-async function getContent() {
-  return apiCall('/api/content', { method: 'GET' });
+function isAdmin() {
+  const role = getUserRole();
+  console.log('🔍 isAdmin check - Role:', role);
+  // aceitar diferentes formatos que o backend pode usar
+  return role === 'ADMIN' || role === 'admin' || role === 'ADMINISTRATOR' || role === true;
 }
 
-// Obter conteúdo específico por chave
-async function getContentByKey(key) {
-  return apiCall(`/api/content/${key}`, { method: 'GET' });
+function setToken(token) {
+  localStorage.setItem("authToken", token);
 }
 
-// Criar novo conteúdo
-async function createContent(data) {
-  return apiCall('/api/content', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+function removeToken() {
+  localStorage.removeItem("authToken");
 }
 
-// Atualizar conteúdo
-async function updateContent(key, data) {
-  return apiCall(`/api/content/${key}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
+/*
+REDIRECIONAR PARA LOGIN
+*/
+
+function redirectToLogin() {
+  window.location.href = `${BASE_PATH}/admin/login.html`;
 }
 
-// Deletar conteúdo
-async function deleteContent(key) {
-  return apiCall(`/api/content/${key}`, { method: 'DELETE' });
-}
+/*
+REQUISIÇÃO PADRÃO
+*/
 
-/**
- * UPLOAD DE IMAGENS
- */
-async function uploadImage(file) {
-  const formData = new FormData();
-  formData.append('imageFile', file);
+async function apiCall(endpoint, options = {}) {
 
-  const url = `${API_BASE_URL}/api/content/upload/image`;
+  const url = API_BASE_URL + endpoint;
+
   const token = getToken();
-  const headers = {};
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  const headers = {
+    ...(options.headers || {})
+  };
+
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
   }
 
+  if (token) {
+    headers["Authorization"] = "Bearer " + token;
+  }
+
+  const config = {
+    ...options,
+    headers
+  };
+
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
+
+    const response = await fetch(url, config);
 
     if (response.status === 401) {
+
       removeToken();
-      window.location.href = '/admin/login.html';
-      throw new Error('Sessão expirada. Faça login novamente.');
+      redirectToLogin();
+
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
+
+    let data = null;
+
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
     }
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || `Erro no upload: ${response.status}`);
+
+      const message = data?.message || "Erro " + response.status;
+
+      throw new Error(message);
     }
 
-    return await response.json();
+    return data;
+
   } catch (error) {
-    console.error('Upload Error:', error);
+
+    console.error("API Error:", error);
+
     throw error;
+
   }
 }
 
-/**
- * PARCEIROS
- */
+/*
+AUTH
 
-// Listar parceiros
-async function getPartners() {
-  return apiCall('/api/partners', { method: 'GET' });
-}
+De acordo com a documentação do backend, as rotas são:
+  POST /auth/login          -> body { email, password }
+  POST /auth/register       -> body { name, email, password, isAdmin? }
 
-// Criar parceiro
-async function createPartner(name, logoFile) {
-  const formData = new FormData();
-  formData.append('name', name);
-  formData.append('logoFile', logoFile);
+O base URL configurado (API_BASE_URL) já aponta para
+https://zaia-uniformes-backend.onrender.com, então todos os
+endpoints aqui antepõem "/api" para manter compatibilidade
+com o servidor atual.
+*/
 
-  const url = `${API_BASE_URL}/api/partners`;
-  const token = getToken();
-  const headers = {};
+async function login(email, password) {
+  const response = await apiCall("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify({
+      email,
+      password
+    })
+  });
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  if (response && response.token) {
+    setToken(response.token);
+
+    // tentar salvar role do usuário - pode vir na resposta ou no token
+    let role = null;
+    if (response.user) {
+      role = response.user.role || (response.user.isAdmin ? 'ADMIN' : 'USER');
+    } else {
+      // tentar extrair do token JWT
+      try {
+        const payload = JSON.parse(atob(response.token.split(".")[1]));
+        role = payload.role || (payload.isAdmin ? 'ADMIN' : 'USER');
+      } catch (e) {
+        console.warn('Não foi possível extrair role do token:', e);
+      }
+    }
+
+    if (role) {
+      localStorage.setItem("userRole", role);
+      console.log('Role salvo:', role);
+    }
   }
 
+  return response;
+}
+
+// opcionalmente podemos expor registro para facilitar testes
+async function register(name, email, password, isAdmin = false) {
+  const response = await apiCall("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify({
+      name,
+      email,
+      password,
+      isAdmin
+    })
+  });
+
+  // o backend normalmente não retorna token ao registrar,
+  // mas deixamos o retorno para o chamador decidir.
+  return response;
+}
+
+async function verifyAuth() {
+  // o backend original não documentou "/auth/me"; se ele não
+  // existir, tratar como instância qualquer chamada que
+  // confirme o token. Caso precise, ajuste para "/auth/verify".
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-
-    if (response.status === 401) {
-      removeToken();
-      window.location.href = '/admin/login.html';
-      throw new Error('Sessão expirada. Faça login novamente.');
-    }
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || `Erro: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Create Partner Error:', error);
-    throw error;
+    return await apiCall("/api/auth/me");
+  } catch {
+    return null;
   }
 }
 
-// Deletar parceiro
-async function deletePartner(id) {
-  return apiCall(`/api/partners/${id}`, { method: 'DELETE' });
+/*
+CONTENT
+*/
+
+function getContent() {
+  return apiCall("/api/content");
 }
 
-/**
- * USUÁRIOS
- */
-
-// Listar usuários
-async function getUsers() {
-  return apiCall('/api/users', { method: 'GET' });
+function getContentByKey(key) {
+  return apiCall("/api/content/" + key);
 }
 
-// Criar usuário
-async function createUser(data) {
-  return apiCall('/api/users', {
-    method: 'POST',
-    body: JSON.stringify(data),
+function createContent(data) {
+  return apiCall("/api/content", {
+    method: "POST",
+    body: JSON.stringify(data)
   });
 }
 
-// Atualizar usuário
-async function updateUser(id, data) {
-  return apiCall(`/api/users/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
+function updateContent(key, data) {
+  return apiCall("/api/content/" + key, {
+    method: "PUT",
+    body: JSON.stringify(data)
   });
 }
 
-// Deletar usuário
-async function deleteUser(id) {
-  return apiCall(`/api/users/${id}`, { method: 'DELETE' });
+function deleteContent(key) {
+  return apiCall("/api/content/" + key, {
+    method: "DELETE"
+  });
 }
 
-// Fazer logout
+/*
+UPLOAD IMAGE
+*/
+
+function uploadImage(file) {
+
+  const formData = new FormData();
+
+  formData.append("imageFile", file);
+
+  return apiCall("/api/content/upload/image", {
+    method: "POST",
+    body: formData
+  });
+}
+
+/*
+PARTNERS
+*/
+
+function getPartners() {
+  return apiCall("/api/partners");
+}
+
+function createPartner(name, logoFile) {
+
+  const formData = new FormData();
+
+  formData.append("name", name);
+  formData.append("logoFile", logoFile);
+
+  return apiCall("/api/partners", {
+    method: "POST",
+    body: formData
+  });
+}
+
+function deletePartner(id) {
+  return apiCall("/api/partners/" + id, {
+    method: "DELETE"
+  });
+}
+
+/*
+USERS
+*/
+
+function getUsers() {
+  return apiCall("/api/users");
+}
+
+function createUser(data) {
+  return apiCall("/api/users", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+function updateUser(id, data) {
+  return apiCall("/api/users/" + id, {
+    method: "PUT",
+    body: JSON.stringify(data)
+  });
+}
+
+function deleteUser(id) {
+  return apiCall("/api/users/" + id, {
+    method: "DELETE"
+  });
+}
+
+/*
+LOGOUT
+*/
+
 function logout() {
+
   removeToken();
-  window.location.href = '/admin/login.html';
+
+  redirectToLogin();
+
 }

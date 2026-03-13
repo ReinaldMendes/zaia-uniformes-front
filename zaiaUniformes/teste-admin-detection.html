@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Admin Detection</title>
+</head>
+<body>
+    <h1>Teste de Detecção de Admin</h1>
+    <div id="result"></div>
+
+    <script src="admin/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const result = document.getElementById('result');
+            const token = getToken();
+            const role = getUserRole();
+            const isAdminCheck = isAdmin();
+
+            result.innerHTML = `
+                <p><strong>Token:</strong> ${token ? 'Presente' : 'Ausente'}</p>
+                <p><strong>Role:</strong> ${role || 'Nulo'}</p>
+                <p><strong>isAdmin():</strong> ${isAdminCheck}</p>
+                <p><strong>localStorage userRole:</strong> ${localStorage.getItem('userRole') || 'Nulo'}</p>
+            `;
+
+            console.log('Token:', token);
+            console.log('Role:', role);
+            console.log('isAdmin:', isAdminCheck);
+        });
+    </script>
+</body>
+</html>

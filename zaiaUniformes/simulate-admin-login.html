@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simular Login Admin</title>
+</head>
+<body>
+    <h1>Simulando Login como Admin</h1>
+    <button id="simulateLogin">Simular Login como Admin</button>
+    <button id="clearStorage">Limpar Storage</button>
+    <div id="status"></div>
+
+    <script>
+        document.getElementById('simulateLogin').addEventListener('click', () => {
+            // Simular um token JWT com role ADMINISTRATOR
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIFVzZXIiLCJyb2xlIjoiQURNSU5JU1RSQVRPUiIsImlhdCI6MTUxNjIzOTAyMn0.signature';
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('userRole', 'ADMINISTRATOR');
+            document.getElementById('status').innerHTML = '✅ Login simulado como ADMINISTRATOR';
+        });
+
+        document.getElementById('clearStorage').addEventListener('click', () => {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            document.getElementById('status').innerHTML = '🗑️ Storage limpo';
+        });
+    </script>
+</body>
+</html>

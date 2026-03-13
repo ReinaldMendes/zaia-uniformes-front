@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Admin</title>
+</head>
+<body>
+    <h1>Debug Admin Mode</h1>
+    <div id="debug"></div>
+
+    <script src="admin/api.js"></script>
+    <script src="admin/auth.js"></script>
+    <script src="js/dynamic-content-loader.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const debug = document.getElementById('debug');
+            debug.innerHTML = `
+                <p>Token: ${getToken() ? 'Presente' : 'Ausente'}</p>
+                <p>Role: ${getUserRole()}</p>
+                <p>Is Admin: ${isAdmin()}</p>
+                <p>BASE_PATH: ${typeof BASE_PATH !== 'undefined' ? BASE_PATH : 'Não definido'}</p>
+            `;
+        });
+    </script>
+</body>
+</html>

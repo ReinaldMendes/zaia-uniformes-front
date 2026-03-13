@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Scripts</title>
+</head>
+<body>
+    <h1>Teste de Carregamento de Scripts</h1>
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+        let step = 0;
+
+        function log(message) {
+            step++;
+            output.innerHTML += `<p>${step}. ${message}</p>`;
+            console.log(message);
+        }
+
+        log('Página carregada');
+    </script>
+
+    <script src="admin/api.js"></script>
+    <script>
+        log('api.js carregado');
+        log('getToken function: ' + (typeof getToken === 'function' ? '✅ OK' : '❌ FAIL'));
+        log('BASE_PATH: ' + (typeof BASE_PATH !== 'undefined' ? BASE_PATH : '❌ Não definido'));
+    </script>
+
+    <script src="admin/auth.js"></script>
+    <script>
+        log('auth.js carregado');
+        log('isAuthenticated function: ' + (typeof isAuthenticated === 'function' ? '✅ OK' : '❌ FAIL'));
+    </script>
+
+    <script src="js/dynamic-content-loader.js"></script>
+    <script>
+        log('dynamic-content-loader.js carregado');
+        log('isAdmin function: ' + (typeof isAdmin === 'function' ? '✅ OK' : '❌ FAIL'));
+        log('showAdminToolbar function: ' + (typeof showAdminToolbar === 'function' ? '✅ OK' : '❌ FAIL'));
+    </script>
+
+    <script>
+        log('Todos os scripts carregados');
+        log('Testando detecção de admin...');
+        const adminCheck = typeof isAdmin === 'function' ? isAdmin() : false;
+        log('É admin: ' + (adminCheck ? '✅ Sim' : '❌ Não'));
+    </script>
+</body>
+</html>
